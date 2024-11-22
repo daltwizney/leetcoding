@@ -4,9 +4,14 @@
   "description": "",
   "main": "./src/main.js",
   "scripts": {
-    "test": "node ./src/main.js"
+    "test": "node ./src/main.js",
+    "build-cpp": "mkdirp wasm && emcc ./src/cpp/main.cpp -o ./wasm/main.js",
+    "test-cpp": "node ./wasm/main.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "mkdirp": "^3.0.1"
+  }
 }
