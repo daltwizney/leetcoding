@@ -1,110 +1,130 @@
 #include <algorithm>
 #include <stdio.h>
+#include <vector>
 #include <stack>
+#include <queue>
 
-class Node { 
-    public: 
-        int value;
-        Node* left;
-        Node* right;
+#include <unordered_set>
 
-        Node(int value) {
-            this->value = value;
-            left = nullptr;
-            right = nullptr;
+#include <unordered_map>
+
+int largestUniqueNumber(std::vector<int>& nums) {
+    
+    std::unordered_map<int, int> valueCount;
+
+    for (int i = 0; i < nums.size(); ++i)
+    {
+        int value = nums[i];
+
+        if (valueCount.find(value) == valueCount.end())
+        {
+            valueCount.emplace(value, 1);
         }
-};
+        else
+        {
+            valueCount[value]++;
+        }
+    }
 
-class BinarySearchTree {
-    public:
-        Node* root;
+    int max = INT_MIN;
 
-    public:
-        BinarySearchTree() { root = nullptr; }
+    for (int i = 0; i < nums.size(); ++i)
+    {
+        int value = nums[i];
 
+        if (valueCount[value] == 1 && value > max)
+        {
+            max = value;
+        }
+    }
 
-        // ---------------------------------------------------
-        //  Below is a helper function used by the destructor
-        //  Deletes all nodes in BST
-        //  Similar to DFS PostOrder in Tree Traversal section
-        // ---------------------------------------------------
-        void destroy(Node* currentNode) {
-            if (currentNode == nullptr) return;
-            if (currentNode->left) destroy(currentNode->left);
-            if (currentNode->right) destroy(currentNode->right);
-            delete currentNode;
+    if (max == INT_MIN)
+    {
+        return -1;
+    }
+
+    return max;
+}
+
+// TODO: this is too slow, how can we optimize it further?
+bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int destination) {
+
+    if (n == 1 && (source == destination))
+    {
+        return true;
+    }
+
+    if (edges.size() == 0)
+    {
+        return false;
+    }
+
+    // build adjacency list for graph representation
+    std::unordered_map<int, std::unordered_set<int>> graph;
+
+    for (int i = 0; i < edges.size(); ++i)
+    {
+        int node1 = edges[i][0];
+        int node2 = edges[i][1];
+
+        if ((node1 == source && node2 == destination) ||
+            (node2 == source && node1 == destination))
+        {
+            return true;
         }
 
-        ~BinarySearchTree() { destroy(root); }
+        if (graph.find(node1) == graph.end())
+        {
+            graph.emplace(node1, std::unordered_set<int>());
+        }
 
-        Node* getRoot() {
-            return root;
-        } 
+        if (graph.find(node2) == graph.end())
+        {
+            graph.emplace(node2, std::unordered_set<int>());
+        }
 
-        //   +=====================================================+
-        //   |                 WRITE YOUR CODE HERE                |
-        //   | Description:                                        |
-        //   | - This method inserts a new value into the tree.    |
-        //   | - A new node is created for the value.              |
-        //   | - Starts at root and finds the correct location.    |
-        //   | - Return type: bool                                 |
-        //   |                                                     |
-        //   | Tips:                                               |
-        //   | - If the tree is empty (root == nullptr), set root  |
-        //   |   to the new node and return true.                  |
-        //   | - Use a while loop to find the correct location.    |
-        //   | - If the value already exists, return false.        |
-        //   | - Insert the new node at the correct position.      |
-        //   | - Check output from Test.cpp in "User logs".        |
-        //   +=====================================================+
-        bool insert(int value) {
-            
-            if (!root)
+        graph[node1].insert(node2);
+        graph[node2].insert(node1);
+    }
+
+    // BFS on graph to see if source is connected to destination
+    std::queue<int> nodeQueue;
+
+    std::unordered_set<int> visitedNodes;
+
+    nodeQueue.push(source);
+
+    while (nodeQueue.size() > 0)
+    {
+        int node = nodeQueue.front();
+        nodeQueue.pop();
+
+        if (node == destination)
+        {
+            return true;
+        }
+
+        visitedNodes.insert(node);
+
+        auto edges = graph[node];
+
+        for (auto iter = edges.begin(); iter != edges.end(); ++iter)
+        {
+            int sibling = *iter;
+
+            if (visitedNodes.find(sibling) == visitedNodes.end())
             {
-                root = new Node(value);
-                return true;
-            }
-
-            std::stack<Node*> buffer;
-
-            buffer.push(root);
-
-            while (buffer.size() > 0)
-            {
-                Node* node = buffer.top();
-                buffer.pop();
-
-                if (node->value == value)
-                {
-                    return false; // no duplicates allowed
-                }
-
-                if (value > node->value)
-                {
-                    if (!node->right)
-                    {
-                        node->right = new Node(value);
-                        return true;
-                    }
-
-                    buffer.push(node->right);
-                }
-                else if (value < node->value)
-                {
-                    if (!node->left)
-                    {
-                        node->left = new Node(value);
-                        return true;
-                    }
-
-                    buffer.push(node->left);
-                }
+                nodeQueue.push(sibling);
             }
         }
-};
+    }
 
+    return false;
+}
 
 int main() {
+
   printf("hello wasm!\n");
+  
   return 0;
 }
