@@ -49,7 +49,7 @@ int largestUniqueNumber(std::vector<int>& nums) {
 // TODO: this is too slow, how can we optimize it further?
 bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int destination) {
 
-    if (n == 1 && (source == destination))
+    if (n >= 1 && (source == destination))
     {
         return true;
     }
@@ -83,12 +83,12 @@ bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int dest
             graph.emplace(node2, std::unordered_set<int>());
         }
 
-        graph[node1].insert(node2);
-        graph[node2].insert(node1);
+        graph[node1].emplace(node2);
+        graph[node2].emplace(node1);
     }
 
     // BFS on graph to see if source is connected to destination
-    std::queue<int> nodeQueue;
+    std::stack<int> nodeQueue;
 
     std::unordered_set<int> visitedNodes;
 
@@ -96,7 +96,7 @@ bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int dest
 
     while (nodeQueue.size() > 0)
     {
-        int node = nodeQueue.front();
+        int node = nodeQueue.top();
         nodeQueue.pop();
 
         if (node == destination)
@@ -104,7 +104,7 @@ bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int dest
             return true;
         }
 
-        visitedNodes.insert(node);
+        visitedNodes.emplace(node);
 
         auto edges = graph[node];
 
