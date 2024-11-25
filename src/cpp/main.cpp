@@ -141,14 +141,14 @@ void reverseString(std::vector<char>& s) {
     }
 }
 
-void _removeLastToken(std::deque<char>& path) {
+void _removeLastToken(std::stack<char>& path) {
 
     // NOTE: this function shouldn't remove first '/' in path!
     while (path.size() > 1)
     {
-        char value = path.back();
+        char value = path.top();
 
-        path.pop_back();
+        path.pop();
 
         if (value == '/')
         {
@@ -159,9 +159,9 @@ void _removeLastToken(std::deque<char>& path) {
 
 std::string simplifyPath(std::string path) {
     
-    std::deque<char> newPath;
+    std::stack<char> newPath;
 
-    newPath.push_back('/');
+    newPath.push('/');
 
     bool oneDot = false;
     bool twoDots = false;
@@ -183,9 +183,9 @@ std::string simplifyPath(std::string path) {
                 _removeLastToken(newPath);
             }
             
-            if (newPath.back() != '/' && (i != path.size() - 1))
+            if (newPath.top() != '/' && (i != path.size() - 1))
             {
-                newPath.push_back('/');
+                newPath.push('/');
             }
 
             // reset state for next token
@@ -211,7 +211,7 @@ std::string simplifyPath(std::string path) {
                 oneDot = true;
             }
 
-            newPath.push_back(path[i]);
+            newPath.push(path[i]);
         }
         else
         {
@@ -219,7 +219,7 @@ std::string simplifyPath(std::string path) {
             twoDots = false;
             hasCharacter = true;
 
-            newPath.push_back(path[i]);
+            newPath.push(path[i]);
         }
     }
 
@@ -234,18 +234,19 @@ std::string simplifyPath(std::string path) {
         _removeLastToken(newPath);
     }
 
-    if (newPath.size() > 1 && newPath.back() == '/')
+    if (newPath.size() > 1 && newPath.top() == '/')
     {
-        newPath.pop_back();
+        newPath.pop();
     }
 
     // generate new string from path
-    std::string result;
+    int resultLength = newPath.size();
+    std::string result(resultLength, '0');
 
-    while (newPath.size() > 0)
+    for (int i = resultLength - 1; i >= 0; --i)
     {
-        result.push_back(newPath.front());
-        newPath.pop_front();
+        result[i] = newPath.top();
+        newPath.pop();
     }
 
     return result;
