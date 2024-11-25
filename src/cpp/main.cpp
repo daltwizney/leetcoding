@@ -1,8 +1,9 @@
+#include <iostream>
 #include <algorithm>
-#include <stdio.h>
 #include <vector>
 #include <stack>
 #include <queue>
+#include <deque>
 
 #include <unordered_set>
 
@@ -46,7 +47,6 @@ int largestUniqueNumber(std::vector<int>& nums) {
     return max;
 }
 
-// TODO: this is too slow, how can we optimize it further?
 bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int destination) {
 
     if (n >= 1 && (source == destination))
@@ -122,9 +122,147 @@ bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int dest
     return false;
 }
 
+void reverseString(std::vector<char>& s) {
+
+    if  (s.size() < 2)
+    {
+        return;
+    }
+
+    int length = s.size();
+
+    for (int i = 0; i < (length / 2); ++i)
+    {
+        int char1 = s[i];
+        int char2 = s[length - 1 - i];
+
+        s[i] = char2;
+        s[length - 1 - i] = char1;
+    }
+}
+
+void _removeLastToken(std::deque<char>& path) {
+
+    // NOTE: this function shouldn't remove first '/' in path!
+    while (path.size() > 1)
+    {
+        char value = path.back();
+
+        path.pop_back();
+
+        if (value == '/')
+        {
+            return;
+        }
+    }
+}
+
+std::string simplifyPath(std::string path) {
+    
+    std::deque<char> newPath;
+
+    newPath.push_back('/');
+
+    bool oneDot = false;
+    bool twoDots = false;
+    bool hasCharacter = false;
+
+    // process path onto stack
+    for (int i = 0; i < path.size(); ++i)
+    {
+        if (path[i] == '/')
+        {
+            // current token has ended
+            if (oneDot)
+            {
+                _removeLastToken(newPath);
+            }
+            else if (twoDots)
+            {
+                _removeLastToken(newPath);
+                _removeLastToken(newPath);
+            }
+            
+            if (newPath.back() != '/' && (i != path.size() - 1))
+            {
+                newPath.push_back('/');
+            }
+
+            // reset state for next token
+            oneDot = false;
+            twoDots = false;
+            hasCharacter = false;
+        }        
+        else if (path[i] == '.' && !hasCharacter)
+        {
+            if (oneDot)
+            {
+                twoDots = true;
+                oneDot = false;
+            }            
+            else if (twoDots)
+            {
+                oneDot = false;
+                twoDots = false;
+                hasCharacter = true;
+            }
+            else
+            {
+                oneDot = true;
+            }
+
+            newPath.push_back(path[i]);
+        }
+        else
+        {
+            oneDot = false;
+            twoDots = false;
+            hasCharacter = true;
+
+            newPath.push_back(path[i]);
+        }
+    }
+
+    // current token has ended
+    if (oneDot)
+    {
+        _removeLastToken(newPath);
+    }
+    else if (twoDots)
+    {
+        _removeLastToken(newPath);
+        _removeLastToken(newPath);
+    }
+
+    if (newPath.size() > 1 && newPath.back() == '/')
+    {
+        newPath.pop_back();
+    }
+
+    // generate new string from path
+    std::string result;
+
+    while (newPath.size() > 0)
+    {
+        result.push_back(newPath.front());
+        newPath.pop_front();
+    }
+
+    return result;
+}
+
+void SimplifyPathTest()
+{
+    std::cout << "simplifyPath('/home/') = " << simplifyPath("/home/") << std::endl;
+    std::cout << "simplifyPath('/home//foo/') = " << simplifyPath("/home//foo/") << std::endl;
+    std::cout << "simplifyPath('/home/user/Documents/../Pictures') = " << simplifyPath("/home/user/Documents/../Pictures") << std::endl;
+    std::cout << "simplifyPath('/../') = " << simplifyPath("/../") << std::endl;
+    std::cout << "simplifyPath('/.../a/../b/c/../d/./') = " << simplifyPath("/.../a/../b/c/../d/./") << std::endl;
+}
+
 int main() {
 
-  printf("hello wasm!\n");
-  
+  SimplifyPathTest();
+
   return 0;
 }
