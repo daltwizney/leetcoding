@@ -152,6 +152,62 @@ int maxAreaOfIsland(vector<vector<int>>& grid) {
     return maxArea;
 }
 
+int minStoneSum(vector<int>& piles, int k) {
+    
+    priority_queue<int, vector<int>, less<int>> maxHeap(piles.begin(), piles.end());
+
+    for (int i = 0; i < k; ++i)
+    {
+        int currentMax = maxHeap.top();
+        maxHeap.pop();
+
+        maxHeap.emplace(currentMax - (currentMax / 2));
+    }
+
+    int sum = 0;
+
+    while (maxHeap.size() > 0)
+    {
+        sum += maxHeap.top();
+        maxHeap.pop();
+    }
+
+    return sum;
+}
+
+int findKthLargest(vector<int>& nums, int k) {
+
+    priority_queue<int, vector<int>, less<int>> maxHeap(nums.begin(), nums.end());
+
+    for (int i = 0; i < k - 1; ++i)
+    {
+        maxHeap.pop();
+    }
+
+    return maxHeap.top();
+}
+
+struct PointCloser {
+    bool operator() (const vector<int>& a, const vector<int>& b) {
+        return (a[0] * a[0] + a[1] * a[1]) > (b[0] * b[0] + b[1] * b[1]);
+    }
+};
+
+vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
+
+    priority_queue<vector<int>, vector<vector<int>>, PointCloser> minHeap (points.begin(), points.end());
+
+    vector<vector<int>> result;
+
+    for (int i = 0; i < k; ++i)
+    {
+        result.push_back(minHeap.top());
+        minHeap.pop();
+    }
+
+    return result;
+}
+
 int main() {
 
   return 0;
