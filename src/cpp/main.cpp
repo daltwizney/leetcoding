@@ -5,265 +5,154 @@
 #include <queue>
 #include <deque>
 
+#include <cstdint>
+
 #include <unordered_set>
 
 #include <unordered_map>
 
-int largestUniqueNumber(std::vector<int>& nums) {
-    
-    std::unordered_map<int, int> valueCount;
+using namespace std;
 
-    for (int i = 0; i < nums.size(); ++i)
-    {
-        int value = nums[i];
 
-        if (valueCount.find(value) == valueCount.end())
-        {
-            valueCount.emplace(value, 1);
-        }
-        else
-        {
-            valueCount[value]++;
-        }
+struct GridCell
+{
+    int i;
+    int j;
+
+    GridCell(int i, int j) : i(i), j(j) {}
+
+    int getHash() {
+
+        return i + (j << 24);
     }
+};
 
-    int max = INT_MIN;
+int computeArea(vector<vector<int>>& grid, GridCell root, unordered_set<int>& visitedNodes) {
 
-    for (int i = 0; i < nums.size(); ++i)
+    int m = grid.size();
+    int n = grid[0].size();
+
+    int area = 0;
+
+    stack<GridCell> cells;
+
+    cells.push(root);
+
+    while (cells.size() > 0)
     {
-        int value = nums[i];
+        GridCell cell = cells.top();
+        cells.pop();
 
-        if (valueCount[value] == 1 && value > max)
+        int cellValue = grid[cell.i][cell.j];
+
+        if (cellValue == 1 && (visitedNodes.find(cell.getHash()) == visitedNodes.end()))
         {
-            max = value;
-        }
-    }
-
-    if (max == INT_MIN)
-    {
-        return -1;
-    }
-
-    return max;
-}
-
-bool validPath(int n, std::vector<std::vector<int>>& edges, int source, int destination) {
-
-    if (n >= 1 && (source == destination))
-    {
-        return true;
-    }
-
-    if (edges.size() == 0)
-    {
-        return false;
-    }
-
-    // build adjacency list for graph representation
-    std::unordered_map<int, std::unordered_set<int>> graph;
-
-    for (int i = 0; i < edges.size(); ++i)
-    {
-        int node1 = edges[i][0];
-        int node2 = edges[i][1];
-
-        if ((node1 == source && node2 == destination) ||
-            (node2 == source && node1 == destination))
-        {
-            return true;
+            area++;
         }
 
-        if (graph.find(node1) == graph.end())
+        visitedNodes.emplace(cell.getHash());
+
+        GridCell leftChild(cell.i, cell.j - 1);
+        GridCell rightChild(cell.i, cell.j + 1);
+        GridCell topChild(cell.i - 1, cell.j);
+        GridCell bottomChild(cell.i + 1, cell.j);
+
+        if (leftChild.j >= 0 && (visitedNodes.find(leftChild.getHash()) == visitedNodes.end()))
         {
-            graph.emplace(node1, std::unordered_set<int>());
-        }
-
-        if (graph.find(node2) == graph.end())
-        {
-            graph.emplace(node2, std::unordered_set<int>());
-        }
-
-        graph[node1].emplace(node2);
-        graph[node2].emplace(node1);
-    }
-
-    // BFS on graph to see if source is connected to destination
-    std::stack<int> nodeQueue;
-
-    std::unordered_set<int> visitedNodes;
-
-    nodeQueue.push(source);
-
-    while (nodeQueue.size() > 0)
-    {
-        int node = nodeQueue.top();
-        nodeQueue.pop();
-
-        if (node == destination)
-        {
-            return true;
-        }
-
-        visitedNodes.emplace(node);
-
-        auto edges = graph[node];
-
-        for (auto iter = edges.begin(); iter != edges.end(); ++iter)
-        {
-            int sibling = *iter;
-
-            if (visitedNodes.find(sibling) == visitedNodes.end())
+            if (grid[leftChild.i][leftChild.j] == 1)
             {
-                nodeQueue.push(sibling);
-            }
-        }
-    }
-
-    return false;
-}
-
-void reverseString(std::vector<char>& s) {
-
-    if  (s.size() < 2)
-    {
-        return;
-    }
-
-    int length = s.size();
-
-    for (int i = 0; i < (length / 2); ++i)
-    {
-        int char1 = s[i];
-        int char2 = s[length - 1 - i];
-
-        s[i] = char2;
-        s[length - 1 - i] = char1;
-    }
-}
-
-void _removeLastToken(std::stack<char>& path) {
-
-    // NOTE: this function shouldn't remove first '/' in path!
-    while (path.size() > 1)
-    {
-        char value = path.top();
-
-        path.pop();
-
-        if (value == '/')
-        {
-            return;
-        }
-    }
-}
-
-std::string simplifyPath(std::string path) {
-    
-    std::stack<char> newPath;
-
-    newPath.push('/');
-
-    bool oneDot = false;
-    bool twoDots = false;
-    bool hasCharacter = false;
-
-    // process path onto stack
-    for (int i = 0; i < path.size(); ++i)
-    {
-        if (path[i] == '/')
-        {
-            // current token has ended
-            if (oneDot)
-            {
-                _removeLastToken(newPath);
-            }
-            else if (twoDots)
-            {
-                _removeLastToken(newPath);
-                _removeLastToken(newPath);
-            }
-            
-            if (newPath.top() != '/' && (i != path.size() - 1))
-            {
-                newPath.push('/');
-            }
-
-            // reset state for next token
-            oneDot = false;
-            twoDots = false;
-            hasCharacter = false;
-        }        
-        else if (path[i] == '.' && !hasCharacter)
-        {
-            if (oneDot)
-            {
-                twoDots = true;
-                oneDot = false;
-            }            
-            else if (twoDots)
-            {
-                oneDot = false;
-                twoDots = false;
-                hasCharacter = true;
+                cells.push(leftChild);
             }
             else
             {
-                oneDot = true;
+                visitedNodes.emplace(leftChild.getHash());
             }
-
-            newPath.push(path[i]);
         }
-        else
+
+        if (rightChild.j < n && (visitedNodes.find(rightChild.getHash()) == visitedNodes.end()))
         {
-            oneDot = false;
-            twoDots = false;
-            hasCharacter = true;
+            if (grid[rightChild.i][rightChild.j] == 1)
+            {
+                cells.push(rightChild);
+            }
+            else
+            {
+                visitedNodes.emplace(rightChild.getHash());
+            }
+        }
 
-            newPath.push(path[i]);
+        if (topChild.i >= 0 && (visitedNodes.find(topChild.getHash()) == visitedNodes.end()))
+        {
+            if (grid[topChild.i][topChild.j] == 1)
+            {
+                cells.push(topChild);
+            }
+            else
+            {
+                visitedNodes.emplace(topChild.getHash());
+            }
+        }
+
+        if (bottomChild.i < m && (visitedNodes.find(bottomChild.getHash()) == visitedNodes.end()))
+        {
+            if (grid[bottomChild.i][bottomChild.j] == 1)
+            {
+                cells.push(bottomChild);
+            }
+            else
+            {
+                visitedNodes.emplace(bottomChild.getHash());
+            }
         }
     }
 
-    // current token has ended
-    if (oneDot)
-    {
-        _removeLastToken(newPath);
-    }
-    else if (twoDots)
-    {
-        _removeLastToken(newPath);
-        _removeLastToken(newPath);
-    }
-
-    if (newPath.size() > 1 && newPath.top() == '/')
-    {
-        newPath.pop();
-    }
-
-    // generate new string from path
-    int resultLength = newPath.size();
-    std::string result(resultLength, '0');
-
-    for (int i = resultLength - 1; i >= 0; --i)
-    {
-        result[i] = newPath.top();
-        newPath.pop();
-    }
-
-    return result;
+    return area;
 }
 
-void SimplifyPathTest()
-{
-    std::cout << "simplifyPath('/home/') = " << simplifyPath("/home/") << std::endl;
-    std::cout << "simplifyPath('/home//foo/') = " << simplifyPath("/home//foo/") << std::endl;
-    std::cout << "simplifyPath('/home/user/Documents/../Pictures') = " << simplifyPath("/home/user/Documents/../Pictures") << std::endl;
-    std::cout << "simplifyPath('/../') = " << simplifyPath("/../") << std::endl;
-    std::cout << "simplifyPath('/.../a/../b/c/../d/./') = " << simplifyPath("/.../a/../b/c/../d/./") << std::endl;
+int maxAreaOfIsland(vector<vector<int>>& grid) {
+
+    if (grid.size() == 0 || grid[0].size() == 0)
+    {
+        return 0;
+    }
+
+    int m = grid.size();
+    int n = grid[0].size();
+
+    unordered_set<int> visitedNodes;
+
+    int maxArea = 0;
+
+    for (int i = 0; i < m; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            GridCell cell(i, j);
+            int nodeHash = cell.getHash();
+
+            if (visitedNodes.find(nodeHash) == visitedNodes.end())
+            {
+                if (grid[i][j] == 1)
+                {
+                    int area = computeArea(grid, cell, visitedNodes);
+
+                    if (area > maxArea)
+                    {
+                        maxArea = area;
+                    }
+                }
+                else
+                {
+                    visitedNodes.emplace(nodeHash);
+                }
+            }
+        }
+    }
+
+    return maxArea;
 }
 
 int main() {
-
-  SimplifyPathTest();
 
   return 0;
 }
