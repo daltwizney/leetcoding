@@ -146,5 +146,87 @@ class LinkedList {
         return temp;
     }
     
+    get(index) {
 
+        if (index < 0 || index >= this.length)
+        {
+            return undefined;
+        }
+
+        let temp = this.head;
+
+        for (let i = 1; i <= index; ++i)
+        {
+            temp = temp.next;
+        }
+
+        return temp;
+    }
+
+    set(index, value) {
+
+        let node = this.get(index);
+
+        if (node)
+        {
+            node.value = value;
+            return true;
+        }
+
+        return false;
+    }
+
+    insert(index, value) {
+
+        if (index == 0 || this.length == 0)
+        {
+            this.unshift(value);
+            return true;
+        }
+
+        if (index < 0 || index > this.length)
+        {
+            return false;
+        }
+
+        let previous = this.get(index - 1);
+
+        let temp = previous.next;
+
+        previous.next = new Node(value);
+
+        previous.next.next = temp;
+
+        this.length++;
+
+        return true;
+    }
+
+    remove(index) {
+
+        if (index == 0)
+        {
+            return this.shift();
+        }
+
+        if (index < 0 || index >= this.length || this.length === 0)
+        {
+            return null;
+        }
+
+        let previous = this.get(index - 1);
+
+        let temp = previous.next;
+
+        previous.next = temp.next;
+
+        this.length--;
+
+        return temp;
+    }
+
+    reverse() {
+
+        
+    }
 }
