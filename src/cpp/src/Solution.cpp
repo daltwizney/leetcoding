@@ -3,77 +3,48 @@
 #include <unordered_map>
 #include <queue>
 
+#include <algorithm>
+
 using namespace std;
 
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
 class Solution {
+private:
+
+    int _minDepthRecursive(TreeNode *root) {
+
+        if (root == nullptr) {
+            return INT_MAX;
+        }
+
+        int leftNodeMinDepth = _minDepthRecursive(root->left);
+        int rightNodeMinDepth = _minDepthRecursive(root->right);
+
+        if (leftNodeMinDepth == INT_MAX && rightNodeMinDepth == INT_MAX)
+        {
+            return 1;
+        }
+
+        return min(leftNodeMinDepth, rightNodeMinDepth) + 1;
+    }
+
 public:
 
-    bool validPath(int n, vector<vector<int>>& edges, int source, int destination) {
+    int minDepth(TreeNode* root) {
         
-        if (n < 1) {
-            return false;
-        }
-        else if (source == destination) {
-            return true;
-        }
-
-        // build adjacency list
-        unordered_map<int, vector<int>> graph;
-
-        for (int i = 0; i < edges.size(); ++i)
+        if (root == nullptr)
         {
-            vector<int> edge = edges[i];
-
-            int a = edge[0];
-            int b = edge[1];
-
-            if (graph.find(a) == graph.end())
-            {
-                graph[a] = vector<int>();
-            }
-
-            if (graph.find(b) == graph.end())
-            {
-                graph[b] = vector<int>();
-            }
-
-            graph[a].push_back(b);
-            graph[b].push_back(a);
+            return 0;
         }
 
-        // search for path
-        queue<int> buffer;
-
-        unordered_set<int> visited;
-
-        buffer.emplace(source);
-
-        while (buffer.size() > 0)
-        {
-            int node = buffer.front();
-            buffer.pop();
-
-            if (node == destination)
-            {
-                return true;
-            }
-
-            visited.emplace(node);
-
-            vector<int> neighbors = graph[node];
-
-            for (int i = 0; i < neighbors.size(); ++i)
-            {
-                int neighbor = neighbors[i];
-
-                if (visited.find(neighbor) == visited.end())
-                {
-                    visited.emplace(neighbor);
-                    buffer.emplace(neighbor);
-                }
-            }
-        }
-
-        return false;
+        return _minDepthRecursive(root);
     }
 };
